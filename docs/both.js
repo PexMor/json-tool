@@ -281,6 +281,8 @@ var x_data = {};
 x_data["flat"] = JSON.parse(JSON.stringify(zDataFlat));
 x_data["hie"] = JSON.parse(JSON.stringify(zDataHie));
 x_data["set"] = JSON.parse(JSON.stringify(setting));
+x_data["ex01"] = JSON.parse(JSON.stringify(ex01));
+
 
 function syntaxHighlight(json) {
   if (typeof json != 'string') {
