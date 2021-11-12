@@ -175,9 +175,14 @@ function getRepr(obj) {
     res.text = `array[${obj.length}]`;
     res.recurse = true;
   } else if (typeof obj === "object") {
-    propNames = Object.getOwnPropertyNames(obj);
-    res.text = `object[${propNames.length}]`;
-    res.recurse = true;
+    if (obj === null) {
+      res.text = "null";
+      res.recurse = false;
+    } else {
+      propNames = Object.getOwnPropertyNames(obj);
+      res.text = `object[${propNames.length}]`;
+      res.recurse = true;
+    }
   } else {
     //console.debug(`${typeof obj}:`);
     //console.debug(obj);
@@ -185,6 +190,12 @@ function getRepr(obj) {
     res.text = `<span class='${cssClass}'>${qb}${obj}${qe}</span>`;
   }
   return res;
+}
+
+function arrCopyAndAdd(arr, item, isNum) {
+  var cpArr = JSON.parse(JSON.stringify(arr));
+  cpArr.push({ val: JSON.parse(JSON.stringify(item)), isNum: isNum });
+  return cpArr;
 }
 
 function toZNodeData(ret, obj, parentId, depth, pfx) {
@@ -196,7 +207,7 @@ function toZNodeData(ret, obj, parentId, depth, pfx) {
     ret.push({
       id: selfId,
       pId: parentId,
-      opath: "",
+      opath: [],
       name: getRepr(obj).text,
       open: true,
     });
@@ -207,7 +218,7 @@ function toZNodeData(ret, obj, parentId, depth, pfx) {
     depth = 0;
   }
   if (typeof pfx === "undefined") {
-    pfx = "";
+    pfx = [];
   }
   if (Array.isArray(obj)) {
     // we are processing an array
@@ -215,7 +226,7 @@ function toZNodeData(ret, obj, parentId, depth, pfx) {
       val = obj[ii];
       myId = getId();
       repr = getRepr(val);
-      opath = `${pfx}[${ii}]`;
+      opath = arrCopyAndAdd(pfx, ii, true);
       ret.push({
         id: myId,
         pId: selfId,
@@ -236,7 +247,8 @@ function toZNodeData(ret, obj, parentId, depth, pfx) {
       val = obj[item];
       myId = getId();
       repr = getRepr(val);
-      opath = `${pfx}["${item}"]`;
+      opath = arrCopyAndAdd(pfx, item, false);
+      //opath = `${pfx}["${item}"]`;
       //opath = `${pfx}.${item}`;
       ret.push({
         id: myId,
@@ -265,11 +277,41 @@ function beforeClick(treeId, treeNode, clickFlag) {
   return treeNode.click != false;
 }
 
+function opath2str(opath, bracket) {
+  var txt = "";
+  for (var ii = 0; ii < opath.length; ii++) {
+    if (opath[ii].isNum) {
+      txt += `[${opath[ii].val}]`;
+    } else {
+      if (bracket) {
+        txt += `["${opath[ii].val}"]`;
+      } else {
+        txt += `.${opath[ii].val}`;
+      }
+    }
+  }
+  if (txt.substring(0, 1) === ".") {
+    txt = txt.substring(1);
+  }
+  return txt;
+}
+
 function onClick(event, treeId, treeNode, clickFlag) {
-  showLog(`treeNode.opath,treeNode.val,"... zNodesX${treeNode.opath}`);
-  var res = jq_fce.json(window.data, `.${treeNode.opath}`);
+  // showLog(`treeNode.opath,treeNode.val,"... zNodesX${treeNode.opath}`);
+  opathStr = opath2str(treeNode.opath, true);
+  opathStrAlt = opath2str(treeNode.opath, false);
+  var res = jq_fce.json(window.data, `.${opathStr}`);
   window.result = JSON.parse(JSON.stringify(res));
-  showLog(`.${treeNode.opath} = \n` + syntaxHighlight(JSON.stringify(res, null, 2)));
+  if (opathStr !== opathStrAlt) {
+    showLog(
+      `.${opathStr} = \nor\n.${opathStrAlt} = \n` +
+        syntaxHighlight(JSON.stringify(res, null, 2))
+    );
+  } else {
+    showLog(
+      `.${opathStr} = \n` + syntaxHighlight(JSON.stringify(res, null, 2))
+    );
+  }
 }
 
 function showLog(str) {
@@ -282,28 +324,34 @@ x_data["flat"] = JSON.parse(JSON.stringify(zDataFlat));
 x_data["hie"] = JSON.parse(JSON.stringify(zDataHie));
 x_data["set"] = JSON.parse(JSON.stringify(setting));
 x_data["ex01"] = JSON.parse(JSON.stringify(ex01));
-
+x_data["ex02"] = JSON.parse(JSON.stringify(ex02));
 
 function syntaxHighlight(json) {
-  if (typeof json != 'string') {
-       json = JSON.stringify(json, undefined, 2);
+  if (typeof json != "string") {
+    json = JSON.stringify(json, undefined, 2);
   }
-  json = json.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
-  return json.replace(/("(\\u[a-zA-Z0-9]{4}|\\[^u]|[^\\"])*"(\s*:)?|\b(true|false|null)\b|-?\d+(?:\.\d*)?(?:[eE][+\-]?\d+)?)/g, function (match) {
-      var cls = 'number';
+  json = json
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;");
+  return json.replace(
+    /("(\\u[a-zA-Z0-9]{4}|\\[^u]|[^\\"])*"(\s*:)?|\b(true|false|null)\b|-?\d+(?:\.\d*)?(?:[eE][+\-]?\d+)?)/g,
+    function (match) {
+      var cls = "number";
       if (/^"/.test(match)) {
-          if (/:$/.test(match)) {
-              cls = 'key';
-          } else {
-              cls = 'string';
-          }
+        if (/:$/.test(match)) {
+          cls = "key";
+        } else {
+          cls = "string";
+        }
       } else if (/true|false/.test(match)) {
-          cls = 'boolean';
+        cls = "boolean";
       } else if (/null/.test(match)) {
-          cls = 'null';
+        cls = "null";
       }
-      return '<span class="' + cls + '">' + match + '</span>';
-  });
+      return '<span class="' + cls + '">' + match + "</span>";
+    }
+  );
 }
 
 function loadData(id) {
@@ -313,12 +361,12 @@ function loadData(id) {
     window.data = x_data[id];
   }
   if (typeof window.data === "undefined") {
-    window.data = x_data['set'];
+    window.data = x_data["set"];
   }
   var el = document.getElementById("jsonTa");
   if (el) {
-    el.value = JSON.stringify(window.data,null,4);
-  };
+    el.value = JSON.stringify(window.data, null, 4);
+  }
   $.fn.zTree.destroy();
   window.idPool = undefined;
   window.flat_array = [];
@@ -382,4 +430,5 @@ $(document).ready(function () {
   if (el) {
     el.value = JSON.stringify(setting, null, 2);
   }
+  fuzzySearch("treeDemo", "#search", true, true);
 });

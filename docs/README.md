@@ -2,10 +2,11 @@
 
 Inspired by:
 
-* [https://stedolan.github.io/jq/](https://stedolan.github.io/jq/)
-* [https://github.com/kantord/emuto](https://github.com/kantord/emuto)
-* [https://kantord.github.io/emuto/](https://kantord.github.io/emuto/)
-* [https://kantord.github.io/emuto/docs/try_emuto](https://kantord.github.io/emuto/docs/try_emuto)
+* [https://stedolan.github.io/jq/](https://stedolan.github.io/jq/) - The original JQ command line tool.
+* [https://github.com/fiatjaf/jq-web](https://github.com/fiatjaf/jq-web) - Its web (in browser) variant as emscripten.
+* [https://github.com/kantord/emuto](https://github.com/kantord/emuto) - An alternative written on pure javascript.
+* [https://kantord.github.io/emuto/](https://kantord.github.io/emuto/) - Github pages view on the project.
+* [https://kantord.github.io/emuto/docs/try_emuto](https://kantord.github.io/emuto/docs/try_emuto) - Emuto demo.
 
 # Demos 
 
