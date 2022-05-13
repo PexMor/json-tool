@@ -109,21 +109,20 @@
           </div>
         </form>
       </div>
-      <div style='white-space: nowrap;overflow: scroll;'>
-        <div id="treeDemo" class="ztree panel-resizable"
-          style="max-height:500px;display: inline-block; border: 1px dotted black">tree</div>
-        <div id="log" class='panel-resizable'
-          style="max-height:500px;display: inline-block;vertical-align: top;border: 1px dotted black;">log</div>
-      </div>
+      <hr />
+      <div id="log" class='panel-resizable'
+        style="height:7em;max-height:500px;vertical-align: top;border: 1px dotted black;">log</div>
+      <div id="treeDemo" class="ztree panel-resizable"
+          style="max-height:500px;border: 1px dotted black">tree</div>
       <hr />
       <div>
         <form>
           <div class="form-group">
-            <label for="jsonTa">Json Input</label>
+            <label for="jsonTa">Json Input (paste your json below)</label>
             <textarea class="form-control" id="jsonTa" rows="10"></textarea>
           </div>
           <br>
-          <button type="button" onclick='useJson()' class="btn btn-primary">Use JSON</button>
+          <button type="button" onclick='useJson()' class="btn btn-primary">Load JSON into TreeView</button>
         </form>
       </div>
       <hr>
